@@ -1,4 +1,4 @@
-#include <nfa_factory.hpp>
+#include "nfa_factory.hpp"
 
 
 NFA NFAFactory::from_literal(const char literal)
@@ -89,13 +89,25 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
             break;
         }
 
+        if (!not_first_pass)
+        {
+            NFAFactory::add_final_node(result);
+        }
+
         return result;
     }
 
     size_t union_pos = regexp_rangeless.find('|');
     if (union_pos != regexp_rangeless.npos)
     {
-        return NFAFactory::from_regexp(regexp_rangeless.substr(0, union_pos), true) | NFAFactory::from_regexp(regexp_rangeless.substr(union_pos+1), true);
+        NFA result = NFAFactory::from_regexp(regexp_rangeless.substr(0, union_pos), true) | NFAFactory::from_regexp(regexp_rangeless.substr(union_pos+1), true);
+        
+        if (!not_first_pass)
+        {
+            NFAFactory::add_final_node(result);
+        }
+        
+        return result;
     }
 
 
@@ -123,16 +135,26 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
 
     result += previous;
 
+
     if (!not_first_pass)
     {
-        AutomatonNode final_node = AutomatonNode();
-        final_node.is_final = true;
-
-        result.add_node(final_node);
-        result[result.out_node_index].add_transition(result.out_transition_trigger, result[result.size() - 1]);
-        result.out_transition_trigger = ' ';
-        result.out_node_index = -1;
+        NFAFactory::add_final_node(result);
     }
+
+    return result;
+}
+
+NFA& NFAFactory::add_final_node(NFA& nfa)
+{
+    NFA& result = nfa;
+
+    AutomatonNode final_node = AutomatonNode();
+    final_node.is_final = true;
+
+    result.add_node(final_node);
+    result[result.out_node_index].emplace_transition(result.out_transition_trigger, result[result.size() - 1]);
+    result.out_transition_trigger = ' ';
+    result.out_node_index = -1;
 
     return result;
 }

@@ -1,12 +1,7 @@
 #include "nfa.hpp"
 
 
-constexpr size_t NFA::size() const noexcept
-{
-    return this->nodes.size();
-}
-
-constexpr void NFA::resize(const size_t size)
+void NFA::resize(const size_t size)
 {
     if (size < nodes.size()) {
         std::cerr << "Can't discard nodes to size " << size << std::endl;
@@ -43,6 +38,8 @@ NFA NFA::star() const
     {
         result[i + 1] = i != this->out_node_index ? (*this)[i] : (*this)[i].add_transition(this->out_transition_trigger, start_node);
     }
+
+    return result;
 }
 
 void NFA::add_node(const AutomatonNode node)
@@ -76,7 +73,7 @@ NFA& operator+=(NFA& first, const NFA& second)
     }
 
     first.out_transition_trigger = second.out_transition_trigger;
-    first.out_node_index = second.out_node_index;
+    first.out_node_index = first_size + second.out_node_index;
 
     return first;
 }
@@ -110,7 +107,7 @@ NFA operator+(const NFA& first, const NFA& second)
     }
 
     result.out_transition_trigger = second.out_transition_trigger;
-    result.out_node_index = second.out_node_index;
+    result.out_node_index = first_size + second.out_node_index;
 
     return result;
 }
@@ -133,12 +130,13 @@ NFA operator|(const NFA &first, const NFA &second)
 
     result.resize(first_size + second_size + 2);
 
-    AutomatonNode start_node = AutomatonNode(TransitionMap(), "", false);
-    AutomatonNode finish_node = AutomatonNode(TransitionMap(), "", false);
+    AutomatonNode start_node = AutomatonNode(TransitionMap(), "In", false);
+    AutomatonNode finish_node = AutomatonNode(TransitionMap(), "Out", false);
 
     result.out_transition_trigger = '\0';
 
     result[0] = start_node.emplace_transition('\0', first[0]).emplace_transition('\0', second[0]);
+
     result[first_size + second_size + 1] = finish_node;
     result.out_node_index = first_size + second_size + 1;
 
@@ -147,11 +145,21 @@ NFA operator|(const NFA &first, const NFA &second)
         result[i + 1] = i != first.out_node_index ? first[i] : first[i].add_transition(first.out_transition_trigger, finish_node);
     }
 
-    for (size_t i = 0; i < second_size - 1; i++)
+    for (size_t i = 0; i < second_size; i++)
     {
         result[i + 1 + first_size] = i != second.out_node_index ? second[i] : second[i].add_transition(second.out_transition_trigger, finish_node);
     }
 
 
     return result;
+}
+
+std::ostream& operator<<(std::ostream& os, const NFA& nfa)
+{
+    os << "Out: " << nfa.out_node_index << " at transition " << nfa.out_transition_trigger << '\n';
+    for (int i = 0; i < nfa.size(); i++)
+    {
+        os << nfa[i] << '\n';
+    }
+    return os;
 }

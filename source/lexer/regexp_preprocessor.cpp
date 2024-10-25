@@ -67,12 +67,12 @@ std::string RegexpPreprocessor::clean_ranges(const std::string& regexp)
     return result;
 }
 
-std::vector<std::string> RegexpPreprocessor::split_upper_level_groups(const std::string &regexp)
+std::vector<std::string> RegexpPreprocessor::split_upper_level_groups(const std::string& regexp)
 {
     std::vector<std::string> result;
 
-    int open_groups;
-    size_t start_of_group;
+    int open_groups = 0;
+    size_t start_of_group = 0;
 
     for (size_t i = 0; i < regexp.size(); i++)
     {
@@ -83,10 +83,14 @@ std::vector<std::string> RegexpPreprocessor::split_upper_level_groups(const std:
             open_groups++;
             if (open_groups == 1) 
             {
-                result.push_back(regexp.substr(start_of_group, i - start_of_group));
+                if (i - start_of_group > 0)
+                {
+                    result.push_back(regexp.substr(start_of_group, i - start_of_group));
+                }
                 start_of_group = i;
             }
             break;
+
         case ')':
             if (open_groups == 0) { break; }
 
@@ -103,6 +107,7 @@ std::vector<std::string> RegexpPreprocessor::split_upper_level_groups(const std:
                     result.push_back("|");
                     i++;
                     break;
+
                 case '*':
                     result.push_back("*");
                     i++;
@@ -112,11 +117,31 @@ std::vector<std::string> RegexpPreprocessor::split_upper_level_groups(const std:
                         i++;
                     }
                     break;
+                    
                 default:
                     break;
                 }
             }
             break;
+
+        case '|':
+            if (open_groups == 0)
+            {
+                result.push_back(regexp.substr(start_of_group, i - start_of_group));
+                result.push_back("|");
+                start_of_group =  i+1;           
+            }
+            break;
+
+        case '*':
+            if (open_groups == 0)
+            {
+                result.push_back(regexp.substr(start_of_group, i - start_of_group));
+                result.push_back("*");
+                start_of_group =  i+1;           
+            }
+            break;
+
         default:
             break;
         }
