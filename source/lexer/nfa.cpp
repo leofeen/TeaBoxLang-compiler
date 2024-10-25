@@ -187,7 +187,7 @@ NFA operator|(const NFA &first, const NFA &second)
 std::ostream& operator<<(std::ostream& os, const NFA& nfa)
 {
     os << "Out: " << nfa.out_node_index << " at transition " << nfa.out_transition_trigger << '\n';
-    for (int i = 0; i < nfa.size(); i++)
+    for (size_t i = 0; i < nfa.size(); i++)
     {
         os << nfa[i] << '\n';
     }

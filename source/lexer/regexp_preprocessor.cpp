@@ -2,41 +2,41 @@
 
 std::string RegexpPreprocessor::clean_and_expand(const std::string& regexp)
 {
-    std::string first_pass;
+    std::string result;
 
     bool is_in_list = false;
     int range_start_value = -1;
     bool range_ready = false;
 
-    for (int i = 0; i < regexp.size(); i++)
+    for (size_t i = 0; i < regexp.size(); i++)
     {
         char c = regexp[i];
         switch (c)
         {
         case '[':
             is_in_list = true;
-            first_pass += c;
+            result += c;
             break;
 
         case ']':
             is_in_list = false;
             if (range_start_value != -1)
             {
-                first_pass += static_cast<char>(range_start_value);
+                result += static_cast<char>(range_start_value);
                 range_start_value = -1;
             }
             if (range_ready)
             {
                 range_ready = false;
-                first_pass += '-';
+                result += '-';
             }
-            first_pass += c;
+            result += c;
             break;
             
         default:
             if (!is_in_list) 
             { 
-                first_pass += c;
+                result += c;
                 break;
             }
 
@@ -48,7 +48,7 @@ std::string RegexpPreprocessor::clean_and_expand(const std::string& regexp)
 
             if (range_start_value == -1 && c == '-')
             {
-                first_pass += c;
+                result += c;
                 break;
             }
 
@@ -60,14 +60,14 @@ std::string RegexpPreprocessor::clean_and_expand(const std::string& regexp)
 
             if (!range_ready)
             {
-                first_pass += range_start_value;
+                result += range_start_value;
                 range_start_value = c;
                 break;
             }
 
             for (char range_char = range_start_value; range_char <= c; range_char++)
             {
-                first_pass += range_char;
+                result += range_char;
             }
 
             range_ready = false;
@@ -76,40 +76,7 @@ std::string RegexpPreprocessor::clean_and_expand(const std::string& regexp)
         }
     }
 
-    // std::string result;
-
-    // is_in_list = false;
-
-    // for (int i = 0; i < first_pass.size(); i++)
-    // {
-    //     char c = first_pass[i];
-    //     switch (c)
-    //     {
-    //     case '[':
-    //         if (is_in_list) { continue; }
-    //         is_in_list = true;
-    //         result += '(';
-    //         break;
-
-    //     case ']':
-    //         if (!is_in_list) { continue; }
-    //         is_in_list = false;
-    //         result += ')';
-    //         break;
-            
-    //     default:
-    //         result += c;
-    //         if (!is_in_list) { break; } 
-    //         if (first_pass[i+1] == ']') { break; }
-
-    //         result += '|';
-    //         break;
-    //     }
-    // }
-
-    // return result;
-
-    return first_pass;
+    return result;
 }
 
 std::vector<std::string> RegexpPreprocessor::split_upper_level_groups(const std::string& regexp)

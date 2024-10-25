@@ -197,7 +197,7 @@ NFA NFAFactory::from_range(const std::string& range)
     AutomatonNode start_node;
     AutomatonNode final_node;
 
-    for (int i = 1; i < range.size() - 1; i++)
+    for (size_t i = 1; i < range.size() - 1; i++)
     {
         start_node.emplace_transition(range[i], final_node);
     }
