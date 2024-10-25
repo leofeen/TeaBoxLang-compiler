@@ -9,7 +9,7 @@ struct AutomatonNode
 {
     std::vector<std::pair<char, AutomatonNode>> transitions;
     std::string label;
-    bool is_final;
+    bool is_final = false;
 
     AutomatonNode() = default;
     AutomatonNode(std::vector<std::pair<char, AutomatonNode>> transitions, std::string label, bool is_final);

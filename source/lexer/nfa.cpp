@@ -42,6 +42,36 @@ NFA NFA::star() const
     return result;
 }
 
+NFA NFA::plus() const
+{
+    return *this + this->star();
+}
+
+NFA NFA::question() const
+{
+    NFA result;
+    size_t this_size = this->size();
+
+    result.resize(this_size + 2);
+
+    AutomatonNode start_node = AutomatonNode(TransitionMap(), "", false);
+    AutomatonNode finish_node = AutomatonNode(TransitionMap(), "", false);
+
+    result.out_transition_trigger = '\0';
+
+    result[0] = start_node.emplace_transition('\0', (*this)[0]).emplace_transition('\0', finish_node);
+
+    result[this_size + 1] = finish_node;
+    result.out_node_index = this_size + 1;
+
+    for (size_t i = 0; i < this_size ; i++)
+    {
+        result[i + 1] = i != this->out_node_index ? (*this)[i] : (*this)[i].add_transition(this->out_transition_trigger, finish_node);
+    }
+
+    return result;
+}
+
 void NFA::add_node(const AutomatonNode node)
 {
     this->nodes.push_back(node);
@@ -130,8 +160,8 @@ NFA operator|(const NFA &first, const NFA &second)
 
     result.resize(first_size + second_size + 2);
 
-    AutomatonNode start_node = AutomatonNode(TransitionMap(), "In", false);
-    AutomatonNode finish_node = AutomatonNode(TransitionMap(), "Out", false);
+    AutomatonNode start_node = AutomatonNode(TransitionMap(), "", false);
+    AutomatonNode finish_node = AutomatonNode(TransitionMap(), "", false);
 
     result.out_transition_trigger = '\0';
 

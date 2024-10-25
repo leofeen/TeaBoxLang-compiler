@@ -23,6 +23,8 @@ public:
     const AutomatonNode& operator[](const size_t index) const;
 
     NFA star() const;
+    NFA plus() const;
+    NFA question() const;
 
     void add_node(const AutomatonNode node);
 

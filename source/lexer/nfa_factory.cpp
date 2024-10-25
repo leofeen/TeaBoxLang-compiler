@@ -12,12 +12,13 @@ NFA NFAFactory::from_literal(const char literal)
 
 NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass = false)
 {
-    std::string regexp_rangeless = not_first_pass ? regexp : RegexpPreprocessor::clean_ranges(regexp);
+    std::string regexp_clean = not_first_pass ? regexp : RegexpPreprocessor::clean_and_expand(regexp);
 
-    size_t open_group_pos = regexp.find('(');
-    if (open_group_pos != regexp.npos)
+    size_t open_group_pos = regexp_clean.find('(');
+    size_t open_range_pos = regexp_clean.find('[');
+    if (open_group_pos != regexp_clean.npos || open_range_pos != regexp_clean.npos)
     {
-        auto split = RegexpPreprocessor::split_upper_level_groups(regexp_rangeless);
+        auto split = RegexpPreprocessor::split_upper_level_groups(regexp_clean);
 
         NFA result;
         NFA current;
@@ -28,6 +29,18 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
             if (regexp_fragment == "*")
             {
                 current = current.star();
+                continue;
+            }
+
+            if (regexp_fragment == "+")
+            {
+                current = current.plus();
+                continue;
+            }
+
+            if (regexp_fragment == "?")
+            {
+                current = current.question();
                 continue;
             }
             
@@ -72,7 +85,14 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
                 }
             }
 
-            current = NFAFactory::from_regexp(regexp_fragment, true);
+            if (regexp_fragment[0] == '[' && regexp_fragment[regexp_fragment.size() - 1] == ']')
+            {
+                current = NFAFactory::from_range(regexp_fragment);
+            }
+            else
+            {
+                current = NFAFactory::from_regexp(regexp_fragment, true);
+            }
         }
 
         switch (operation)
@@ -97,10 +117,10 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
         return result;
     }
 
-    size_t union_pos = regexp_rangeless.find('|');
-    if (union_pos != regexp_rangeless.npos)
+    size_t union_pos = regexp_clean.find('|');
+    if (union_pos != regexp_clean.npos)
     {
-        NFA result = NFAFactory::from_regexp(regexp_rangeless.substr(0, union_pos), true) | NFAFactory::from_regexp(regexp_rangeless.substr(union_pos+1), true);
+        NFA result = NFAFactory::from_regexp(regexp_clean.substr(0, union_pos), true) | NFAFactory::from_regexp(regexp_clean.substr(union_pos+1), true);
         
         if (!not_first_pass)
         {
@@ -113,7 +133,7 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
 
     NFA result;
     NFA previous;
-    for (auto c : regexp_rangeless)
+    for (auto c : regexp_clean)
     {
         if (c == '*')
         {
@@ -124,6 +144,28 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
             }
 
             result += previous.star();
+            previous = NFA();
+        }
+        else if (c == '+')
+        {
+            if (previous.size() == 0)
+            {
+                previous = NFAFactory::from_literal(c);
+                continue;
+            }
+
+            result += previous.plus();
+            previous = NFA();
+        }
+        else if (c == '?')
+        {
+            if (previous.size() == 0)
+            {
+                previous = NFAFactory::from_literal(c);
+                continue;
+            }
+
+            result += previous.question();
             previous = NFA();
         }
         else
@@ -140,6 +182,28 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
     {
         NFAFactory::add_final_node(result);
     }
+
+    return result;
+}
+
+NFA NFAFactory::from_range(const std::string& range)
+{
+    NFA result;
+
+    result.resize(2);
+    result.out_transition_trigger = '\0';
+    result.out_node_index = 1;
+
+    AutomatonNode start_node;
+    AutomatonNode final_node;
+
+    for (int i = 1; i < range.size() - 1; i++)
+    {
+        start_node.emplace_transition(range[i], final_node);
+    }
+
+    result[0] = start_node;
+    result[1] = final_node;
 
     return result;
 }
