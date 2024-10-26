@@ -32,11 +32,11 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
                 continue;
             }
 
-            if (regexp_fragment == "+")
-            {
-                current = current.plus();
-                continue;
-            }
+            // if (regexp_fragment == "+")
+            // {
+            //     current = current.plus();
+            //     continue;
+            // }
 
             if (regexp_fragment == "?")
             {
@@ -111,7 +111,7 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
 
         if (!not_first_pass)
         {
-            NFAFactory::add_final_node(result);
+            NFAFactory::finalize(result);
         }
 
         return result;
@@ -120,11 +120,13 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
     size_t union_pos = regexp_clean.find('|');
     if (union_pos != regexp_clean.npos)
     {
-        NFA result = NFAFactory::from_regexp(regexp_clean.substr(0, union_pos), true) | NFAFactory::from_regexp(regexp_clean.substr(union_pos+1), true);
+        NFA left_part = NFAFactory::from_regexp(regexp_clean.substr(0, union_pos), true);
+        NFA right_part = NFAFactory::from_regexp(regexp_clean.substr(union_pos+1), true);
+        NFA result = left_part | right_part;
         
         if (!not_first_pass)
         {
-            NFAFactory::add_final_node(result);
+            NFAFactory::finalize(result);
         }
         
         return result;
@@ -146,17 +148,17 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
             result += previous.star();
             previous = NFA();
         }
-        else if (c == '+')
-        {
-            if (previous.size() == 0)
-            {
-                previous = NFAFactory::from_literal(c);
-                continue;
-            }
+        // else if (c == '+')
+        // {
+        //     if (previous.size() == 0)
+        //     {
+        //         previous = NFAFactory::from_literal(c);
+        //         continue;
+        //     }
 
-            result += previous.plus();
-            previous = NFA();
-        }
+        //     result += previous.plus();
+        //     previous = NFA();
+        // }
         else if (c == '?')
         {
             if (previous.size() == 0)
@@ -180,7 +182,7 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
 
     if (!not_first_pass)
     {
-        NFAFactory::add_final_node(result);
+        NFAFactory::finalize(result);
     }
 
     return result;
@@ -208,7 +210,7 @@ NFA NFAFactory::from_range(const std::string& range)
     return result;
 }
 
-NFA& NFAFactory::add_final_node(NFA& nfa)
+NFA& NFAFactory::finalize(NFA& nfa)
 {
     NFA& result = nfa;
 
@@ -219,6 +221,21 @@ NFA& NFAFactory::add_final_node(NFA& nfa)
     result[result.out_node_index].emplace_transition(result.out_transition_trigger, result[result.size() - 1]);
     result.out_transition_trigger = ' ';
     result.out_node_index = -1;
+
+    std::unordered_set<char> result_alphabet_set;
+
+    for (size_t i = 0; i < result.size(); i++)
+    {
+        for (size_t j = 0; j < result[i].transitions.size(); j++)
+        {
+            char trigger = result[i].transitions[j].first;
+            if (trigger == '\0') { continue; }
+
+            result_alphabet_set.insert(trigger);
+        }
+    }
+
+    result.alphabet = std::string(result_alphabet_set.begin(), result_alphabet_set.end());
 
     return result;
 }

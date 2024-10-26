@@ -18,10 +18,10 @@ public:
     AutomatonNode() {id = id_counter++;};
     AutomatonNode(TransitionMap transitions, std::string label, bool is_final);
 
-    AutomatonNode emplace_transition(const char trigger, const AutomatonNode& target);
-    AutomatonNode add_transition(const char trigger, const AutomatonNode& target) const;
+    AutomatonNode& emplace_transition(const char trigger, const AutomatonNode& target);
+    // AutomatonNode add_transition(const char trigger, const AutomatonNode& target) const;
 
-    constexpr size_t get_id() const { return this->id; }
+    size_t get_id() const { return this->id; }
 
     static size_t id_counter;
 private:
