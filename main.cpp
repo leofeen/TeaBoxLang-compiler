@@ -15,4 +15,13 @@ int main()
 
     DFA dfa = DFAFactory::from_nfa(nfa, [](std::string a, std::string b){return a;});
     std::cout << dfa << std::endl;
+
+    auto result = dfa.test_string("aabaab");
+    bool is_accepted;
+    std::string label;
+    std::string string_suffix;
+    std::tie(is_accepted, label, string_suffix) = result;
+    std::cout << "Is accepted? " << std::boolalpha << is_accepted << std::noboolalpha << '\n';
+    std::cout << "Label: " << label << '\n';
+    std::cout << "Suffix: " << string_suffix << std::endl;
 }

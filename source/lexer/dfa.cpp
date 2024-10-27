@@ -41,6 +41,88 @@ void DFA::add_node(const DetermenisticNode node)
     this->nodes.push_back(node);
 }
 
+// std::pair<bool, std::string> DFA::test_string(std::string input_string)
+// {
+//     if (this->id_lookup_table.empty()) { this->recalculate_id_lookup(); }
+
+//     size_t current_node_id = (*this)[0].get_id();
+    
+//     for (auto c : input_string)
+//     {
+//         if ((*this)[this->id_lookup_table.at(current_node_id)].transitions.contains(c))
+//         {
+//             current_node_id = (*this)[this->id_lookup_table.at(current_node_id)].transitions.at(c);
+//         }
+//         else
+//         {
+//             return std::pair<bool, std::string>(false, "");
+//         }
+//     }
+
+//     if ((*this)[this->id_lookup_table.at(current_node_id)].is_final)
+//     {
+//         return std::pair<bool, std::string>(true, (*this)[this->id_lookup_table.at(current_node_id)].label);
+//     }
+
+//     return std::pair<bool, std::string>(false, "");
+// }
+
+std::tuple<bool, std::string, std::string> DFA::test_string(std::string input_string)
+{
+    if (this->id_lookup_table.empty()) { this->recalculate_id_lookup(); }
+
+    size_t current_node_id = (*this)[0].get_id();
+    bool is_passed_final = false;
+    std::pair<size_t, size_t> passed_final;
+    
+    for (size_t i = 0; i < input_string.size(); i++)
+    {
+        char c = input_string[i];
+
+        if ((*this)[this->id_lookup_table.at(current_node_id)].transitions.contains(c))
+        {
+            current_node_id = (*this)[this->id_lookup_table.at(current_node_id)].transitions.at(c);
+            if ((*this)[this->id_lookup_table.at(current_node_id)].is_final)
+            { 
+                is_passed_final = true;
+                passed_final.first = i;
+                passed_final.second = current_node_id;
+            }
+        }
+        else
+        {
+            if (is_passed_final)
+            {
+                std::string label = (*this)[this->id_lookup_table.at(passed_final.second)].label;
+                return std::tuple<bool, std::string, std::string>(true, label, input_string.substr(passed_final.first+1));
+            }
+
+            return std::tuple<bool, std::string, std::string>(false, "", input_string);
+        }
+    }
+
+    if ((*this)[this->id_lookup_table.at(current_node_id)].is_final)
+    {
+        return std::tuple<bool, std::string, std::string>(true, (*this)[this->id_lookup_table.at(current_node_id)].label, "");
+    }
+    else if (is_passed_final)
+    {
+        std::string label = (*this)[this->id_lookup_table.at(passed_final.second)].label;
+        return std::tuple<bool, std::string, std::string>(true, label, input_string.substr(passed_final.first+1));
+    }
+
+    return std::tuple<bool, std::string, std::string>(false, "", input_string);
+}
+
+void DFA::recalculate_id_lookup()
+{
+    this->id_lookup_table.clear();
+    for (size_t i = 0; i < this->size(); i++)
+    {
+        this->id_lookup_table.emplace((*this)[i].get_id(), i);
+    }
+}
+
 std::ostream& operator<<(std::ostream& os, const DFA& dfa)
 {
     os << "DFA with " << dfa.size() << " nodes:" << '\n';
