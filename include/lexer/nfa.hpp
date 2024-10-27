@@ -29,12 +29,14 @@ public:
     // NFA plus();
     NFA question();
 
-    void add_node(const AutomatonNode node);
+    void add_node(const AutomatonNode& node);
 
     std::unordered_set<size_t> find_closure(std::span<size_t> start_set) const;
     std::unordered_set<size_t> find_closure(std::unordered_set<size_t> start_set) const;
 
     void add_final_label(std::string label);
+
+    void insert(NFA& nfa);
 
 private:
     std::vector<AutomatonNode> nodes;

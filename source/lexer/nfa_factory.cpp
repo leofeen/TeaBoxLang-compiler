@@ -117,7 +117,10 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
         return result;
     }
 
+    RegexpPreprocessor::encode_escaped_symbols(regexp_clean);
     size_t union_pos = regexp_clean.find('|');
+    RegexpPreprocessor::decode_escaped_symbols(regexp_clean);
+
     if (union_pos != regexp_clean.npos)
     {
         NFA left_part = NFAFactory::from_regexp(regexp_clean.substr(0, union_pos), true);
@@ -135,35 +138,32 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
 
     NFA result;
     NFA previous;
+
+    std::map<char, std::string> change_map = {
+        std::pair<char, std::string>('*', "\a"),
+        std::pair<char, std::string>('?', "\v"),
+    };
+
+    regexp_clean = RegexpPreprocessor::remove_escaping_slashes_and_change_operations(regexp_clean, change_map);
+
     for (auto c : regexp_clean)
     {
-        if (c == '*')
+        if (c == change_map.at('*')[0])
         {
             if (previous.size() == 0)
             {
-                previous = NFAFactory::from_literal(c);
+                previous = NFAFactory::from_literal(change_map.at('*')[0]);
                 continue;
             }
 
             result += previous.star();
             previous = NFA();
         }
-        // else if (c == '+')
-        // {
-        //     if (previous.size() == 0)
-        //     {
-        //         previous = NFAFactory::from_literal(c);
-        //         continue;
-        //     }
-
-        //     result += previous.plus();
-        //     previous = NFA();
-        // }
-        else if (c == '?')
+        else if (c == change_map.at('?')[0])
         {
             if (previous.size() == 0)
             {
-                previous = NFAFactory::from_literal(c);
+                previous = NFAFactory::from_literal(change_map.at('?')[0]);
                 continue;
             }
 
@@ -191,6 +191,7 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
 NFA NFAFactory::from_range(const std::string& range)
 {
     NFA result;
+    std::string range_clean = RegexpPreprocessor::remove_escaping_slashes_and_change_operations(range, std::map<char, std::string>());
 
     result.resize(2);
     result.out_transition_trigger = '\0';
@@ -199,15 +200,33 @@ NFA NFAFactory::from_range(const std::string& range)
     AutomatonNode start_node;
     AutomatonNode final_node;
 
-    for (size_t i = 1; i < range.size() - 1; i++)
+    for (size_t i = 1; i < range_clean.size() - 1; i++)
     {
-        start_node.emplace_transition(range[i], final_node);
+        start_node.emplace_transition(range_clean[i], final_node);
     }
 
     result[0] = start_node;
     result[1] = final_node;
 
     return result;
+}
+
+std::unordered_set<char> NFAFactory::construct_nfa_alphabet_set(const NFA& nfa)
+{
+    std::unordered_set<char> result_alphabet_set;
+
+    for (size_t i = 0; i < nfa.size(); i++)
+    {
+        for (size_t j = 0; j < nfa[i].transitions.size(); j++)
+        {
+            char trigger = nfa[i].transitions[j].first;
+            if (trigger == '\0') { continue; }
+
+            result_alphabet_set.insert(trigger);
+        }
+    }
+    
+    return result_alphabet_set;
 }
 
 NFA& NFAFactory::finalize(NFA& nfa)
@@ -222,18 +241,7 @@ NFA& NFAFactory::finalize(NFA& nfa)
     result.out_transition_trigger = ' ';
     result.out_node_index = -1;
 
-    std::unordered_set<char> result_alphabet_set;
-
-    for (size_t i = 0; i < result.size(); i++)
-    {
-        for (size_t j = 0; j < result[i].transitions.size(); j++)
-        {
-            char trigger = result[i].transitions[j].first;
-            if (trigger == '\0') { continue; }
-
-            result_alphabet_set.insert(trigger);
-        }
-    }
+    std::unordered_set<char> result_alphabet_set = NFAFactory::construct_nfa_alphabet_set(result);
 
     result.alphabet = std::string(result_alphabet_set.begin(), result_alphabet_set.end());
 

@@ -93,7 +93,7 @@ NFA NFA::question()
     return result;
 }
 
-void NFA::add_node(const AutomatonNode node)
+void NFA::add_node(const AutomatonNode& node)
 {
     this->nodes.push_back(node);
 }
@@ -138,6 +138,14 @@ void NFA::add_final_label(std::string label)
     }
 
     final_node.label = label;
+}
+
+void NFA::insert(NFA &nfa)
+{
+    for (size_t i = 0; i < nfa.size(); i++)
+    {
+        this->add_node(nfa[i]);
+    }
 }
 
 std::unordered_set<size_t> NFA::find_closure(std::span<size_t> start_set) const

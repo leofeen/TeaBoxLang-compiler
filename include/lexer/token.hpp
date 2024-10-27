@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 
 enum class TokenType
 {
@@ -8,4 +10,12 @@ enum class TokenType
     SUBTRACT,
     MULTIPLY,
     DIVIDE,
+    INT_LITERAL,
+};
+
+
+struct Token
+{
+    TokenType token_type;
+    std::string value;
 };

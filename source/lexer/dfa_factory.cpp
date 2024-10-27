@@ -1,6 +1,6 @@
 #include "dfa_factory.hpp"
 
-DFA DFAFactory::from_nfa(const NFA &nfa, std::string (*label_presedence)(std::string, std::string))
+DFA DFAFactory::from_nfa(const NFA &nfa, std::function<std::string(std::string, std::string)> label_presedence)
 {
     DFA result;
     result.alphabet = nfa.alphabet;
@@ -94,7 +94,7 @@ DFA DFAFactory::from_nfa(const NFA &nfa, std::string (*label_presedence)(std::st
 }
 
 void DFAFactory::check_and_apply_final_label(std::unordered_set<size_t> reached_ids, const NFA& nfa,
-                                                                DetermenisticNode& new_node, std::string (*label_presedence)(std::string, std::string))
+                                                                DetermenisticNode& new_node, std::function<std::string(std::string, std::string)> label_presedence)
 {
     std::vector<std::string> final_nodes_labels;
     for (auto id : reached_ids)
