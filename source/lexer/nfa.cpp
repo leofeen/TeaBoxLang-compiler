@@ -59,13 +59,6 @@ NFA NFA::star()
     return result;
 }
 
-// NFA NFA::plus()
-// {
-//     NFA copy = NFA(*this);
-//     NFA starred = this->star();
-//     return copy + starred;
-// }
-
 NFA NFA::question()
 {
     NFA result;
@@ -73,8 +66,8 @@ NFA NFA::question()
 
     result.resize(this_size + 2);
 
-    AutomatonNode start_node = AutomatonNode(TransitionMap(), "", false);
-    AutomatonNode finish_node = AutomatonNode(TransitionMap(), "", false);
+    AutomatonNode start_node = AutomatonNode();
+    AutomatonNode finish_node = AutomatonNode();
 
     result.out_transition_trigger = '\0';
 

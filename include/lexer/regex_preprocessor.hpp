@@ -6,7 +6,7 @@
 #include <map>
 
 
-class RegexpPreprocessor
+class RegexPreprocessor
 {
 public:
     static std::string clean_and_expand(std::string regexp);

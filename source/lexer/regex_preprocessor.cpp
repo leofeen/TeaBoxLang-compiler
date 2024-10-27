@@ -1,6 +1,6 @@
-#include "regexp_preprocessor.hpp"
+#include "regex_preprocessor.hpp"
 
-std::map<std::string, std::string> RegexpPreprocessor::encode_map = {
+std::map<std::string, std::string> RegexPreprocessor::encode_map = {
     std::pair<std::string, std::string>("\\\\", "//"),
     std::pair<std::string, std::string>("\\[", "$$"),
     std::pair<std::string, std::string>("\\]", "##"),
@@ -12,9 +12,9 @@ std::map<std::string, std::string> RegexpPreprocessor::encode_map = {
     std::pair<std::string, std::string>("\\?", "\a\a"),
 };
 
-void RegexpPreprocessor::encode_escaped_symbols(std::string& regexp)
+void RegexPreprocessor::encode_escaped_symbols(std::string& regexp)
 {
-    for (auto encode_pair : RegexpPreprocessor::encode_map)
+    for (auto encode_pair : RegexPreprocessor::encode_map)
     {
         while (regexp.find(encode_pair.first) != regexp.npos)
         {
@@ -23,9 +23,9 @@ void RegexpPreprocessor::encode_escaped_symbols(std::string& regexp)
     }
 }
 
-void RegexpPreprocessor::decode_escaped_symbols(std::string& regexp)
+void RegexPreprocessor::decode_escaped_symbols(std::string& regexp)
 {
-    for (auto encode_pair : RegexpPreprocessor::encode_map)
+    for (auto encode_pair : RegexPreprocessor::encode_map)
     {
         while (regexp.find(encode_pair.second) != regexp.npos)
         {
@@ -34,11 +34,11 @@ void RegexpPreprocessor::decode_escaped_symbols(std::string& regexp)
     }
 }
 
-std::string RegexpPreprocessor::clean_and_expand(std::string regexp)
+std::string RegexPreprocessor::clean_and_expand(std::string regexp)
 {
     std::string result;
 
-    RegexpPreprocessor::encode_escaped_symbols(regexp);
+    RegexPreprocessor::encode_escaped_symbols(regexp);
 
     bool is_in_list = false;
     int range_start_value = -1;
@@ -171,16 +171,16 @@ std::string RegexpPreprocessor::clean_and_expand(std::string regexp)
         }
     }
 
-    RegexpPreprocessor::decode_escaped_symbols(result);
+    RegexPreprocessor::decode_escaped_symbols(result);
 
     return result;
 }
 
-std::vector<std::string> RegexpPreprocessor::split_upper_level_groups(std::string regexp)
+std::vector<std::string> RegexPreprocessor::split_upper_level_groups(std::string regexp)
 {
     std::vector<std::string> result;
 
-    RegexpPreprocessor::encode_escaped_symbols(regexp);
+    RegexPreprocessor::encode_escaped_symbols(regexp);
 
     int open_groups = 0;
     size_t start_of_group = 0;
@@ -300,7 +300,10 @@ std::vector<std::string> RegexpPreprocessor::split_upper_level_groups(std::strin
             if (is_in_range) { break; }
             if (open_groups == 0)
             {
-                result.push_back(regexp.substr(start_of_group, i - start_of_group));
+                if (i - start_of_group != 0)
+                {
+                    result.push_back(regexp.substr(start_of_group, i - start_of_group));
+                }
                 result.push_back("?");
                 start_of_group = i+1;           
             }
@@ -318,21 +321,21 @@ std::vector<std::string> RegexpPreprocessor::split_upper_level_groups(std::strin
 
     for (auto& part : result)
     {
-        RegexpPreprocessor::decode_escaped_symbols(part);
+        RegexPreprocessor::decode_escaped_symbols(part);
     }
 
     return result;
 }
 
-std::string RegexpPreprocessor::remove_escaping_slashes_and_change_operations(std::string regexp, std::map<char, std::string> change_map)
+std::string RegexPreprocessor::remove_escaping_slashes_and_change_operations(std::string regexp, std::map<char, std::string> change_map)
 {
     std::vector<size_t> to_change;
-    RegexpPreprocessor::encode_escaped_symbols(regexp);
+    RegexPreprocessor::encode_escaped_symbols(regexp);
     for (size_t i = 0; i < regexp.size(); i++)
     {
         if (change_map.contains(regexp[i])) { to_change.push_back(i); }
     }
-    RegexpPreprocessor::decode_escaped_symbols(regexp);
+    RegexPreprocessor::decode_escaped_symbols(regexp);
 
     for (auto i : to_change)
     {
@@ -340,7 +343,7 @@ std::string RegexpPreprocessor::remove_escaping_slashes_and_change_operations(st
     }
 
 
-    for (auto encode_pair : RegexpPreprocessor::encode_map)
+    for (auto encode_pair : RegexPreprocessor::encode_map)
     {
         if (encode_pair.first == "\\\\")
         {

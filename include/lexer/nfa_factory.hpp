@@ -6,7 +6,7 @@
 #include <unordered_set>
 
 #include "nfa.hpp"
-#include "regexp_preprocessor.hpp"
+#include "regex_preprocessor.hpp"
 
 
 class NFAFactory

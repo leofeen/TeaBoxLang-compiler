@@ -9,7 +9,7 @@
 #include "nfa.hpp"
 #include "dfa_factory.hpp"
 #include "dfa.hpp"
-#include "regexp_preprocessor.hpp"
+#include "regex_preprocessor.hpp"
 #include "token.hpp"
 
 

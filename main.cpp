@@ -4,14 +4,19 @@
 #include "nfa.hpp"
 #include "dfa_factory.hpp"
 #include "dfa.hpp"
-#include "regexp_preprocessor.hpp"
+#include "regex_preprocessor.hpp"
 #include "token.hpp"
 #include "lexer.hpp"
 
 
 int main()
 {
-    // std::cout << RegexpPreprocessor::clean_and_expand("[0-9]+") << std::endl;
+    // auto split = RegexPreprocessor::split_upper_level_groups("[ab]*");
+    // for (auto c : split)
+    // {
+    //     std::cout << c << std::endl;
+    // }
+    
     // NFA nfa = NFAFactory::from_regexp("a*(a|b)aa", false);
     // nfa.add_final_label("TEST");
     // std::cout << nfa << std::endl;
@@ -28,8 +33,8 @@ int main()
     // std::cout << "Label: " << label << '\n';
     // std::cout << "Suffix: " << string_suffix << std::endl;
 
-    std::vector<TokenDefenition> tokens{
-        TokenDefenition(TokenType::INT_LITERAL, R"(0\+)", "INT_LIT"),
+    std::vector<TokenDefenition> tokens {
+        TokenDefenition(TokenType::INT_LITERAL, "[\\+-]?[0-9]+", "INT_LIT")
     };
 
     Lexer lexer = Lexer(tokens);

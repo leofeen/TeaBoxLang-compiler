@@ -12,13 +12,13 @@ NFA NFAFactory::from_literal(const char literal)
 
 NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass = false)
 {
-    std::string regexp_clean = not_first_pass ? regexp : RegexpPreprocessor::clean_and_expand(regexp);
+    std::string regexp_clean = not_first_pass ? regexp : RegexPreprocessor::clean_and_expand(regexp);
 
     size_t open_group_pos = regexp_clean.find('(');
     size_t open_range_pos = regexp_clean.find('[');
     if (open_group_pos != regexp_clean.npos || open_range_pos != regexp_clean.npos)
     {
-        auto split = RegexpPreprocessor::split_upper_level_groups(regexp_clean);
+        auto split = RegexPreprocessor::split_upper_level_groups(regexp_clean);
 
         NFA result;
         NFA current;
@@ -117,9 +117,9 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
         return result;
     }
 
-    RegexpPreprocessor::encode_escaped_symbols(regexp_clean);
+    RegexPreprocessor::encode_escaped_symbols(regexp_clean);
     size_t union_pos = regexp_clean.find('|');
-    RegexpPreprocessor::decode_escaped_symbols(regexp_clean);
+    RegexPreprocessor::decode_escaped_symbols(regexp_clean);
 
     if (union_pos != regexp_clean.npos)
     {
@@ -141,10 +141,10 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
 
     std::map<char, std::string> change_map = {
         std::pair<char, std::string>('*', "\a"),
-        std::pair<char, std::string>('?', "\v"),
+        std::pair<char, std::string>('?', "\f"),
     };
 
-    regexp_clean = RegexpPreprocessor::remove_escaping_slashes_and_change_operations(regexp_clean, change_map);
+    regexp_clean = RegexPreprocessor::remove_escaping_slashes_and_change_operations(regexp_clean, change_map);
 
     for (auto c : regexp_clean)
     {
@@ -191,7 +191,7 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
 NFA NFAFactory::from_range(const std::string& range)
 {
     NFA result;
-    std::string range_clean = RegexpPreprocessor::remove_escaping_slashes_and_change_operations(range, std::map<char, std::string>());
+    std::string range_clean = RegexPreprocessor::remove_escaping_slashes_and_change_operations(range, std::map<char, std::string>());
 
     result.resize(2);
     result.out_transition_trigger = '\0';
