@@ -11,17 +11,17 @@ void DFA::resize(const size_t size)
     this->nodes.resize(size);
 }
 
-AutomatonNode& DFA::operator[](const size_t index)
+DetermenisticNode& DFA::operator[](const size_t index)
 {
     return this->nodes.at(index);
 }
 
-const AutomatonNode& DFA::operator[](const size_t index) const
+const DetermenisticNode& DFA::operator[](const size_t index) const
 {
     return this->nodes.at(index);
 }
 
-const AutomatonNode& DFA::get_by_id(const size_t id) const
+const DetermenisticNode& DFA::get_by_id(const size_t id) const
 {
     for (size_t i = 0; i < this->size(); i++)
     {
@@ -36,7 +36,7 @@ const AutomatonNode& DFA::get_by_id(const size_t id) const
     std::exit(1);
 }
 
-void DFA::add_node(const AutomatonNode node)
+void DFA::add_node(const DetermenisticNode node)
 {
     this->nodes.push_back(node);
 }

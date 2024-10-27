@@ -5,7 +5,7 @@ DFA DFAFactory::from_nfa(const NFA &nfa, std::string (*label_presedence)(std::st
     DFA result;
     result.alphabet = nfa.alphabet;
 
-    std::vector<AutomatonNode> result_nodes;
+    std::vector<DetermenisticNode> result_nodes;
 
     typedef std::pair<std::unordered_set<size_t>, size_t> NodeAsSubset;
     auto result_subset_nodes = std::vector<NodeAsSubset>();
@@ -59,7 +59,7 @@ DFA DFAFactory::from_nfa(const NFA &nfa, std::string (*label_presedence)(std::st
             if (new_subset)
             {
                 result_nodes.emplace_back();
-                AutomatonNode& new_node = result_nodes[result_nodes.size() - 1];
+                DetermenisticNode& new_node = result_nodes[result_nodes.size() - 1];
                 result_subset_nodes.push_back(NodeAsSubset(reached_ids, new_node.get_id()));
                 transition_target_id = new_node.get_id();
 
@@ -94,7 +94,7 @@ DFA DFAFactory::from_nfa(const NFA &nfa, std::string (*label_presedence)(std::st
 }
 
 void DFAFactory::check_and_apply_final_label(std::unordered_set<size_t> reached_ids, const NFA& nfa,
-                                                                AutomatonNode& new_node, std::string (*label_presedence)(std::string, std::string))
+                                                                DetermenisticNode& new_node, std::string (*label_presedence)(std::string, std::string))
 {
     std::vector<std::string> final_nodes_labels;
     for (auto id : reached_ids)

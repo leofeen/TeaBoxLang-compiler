@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include <memory>
 
 
 typedef std::vector<std::pair<char, size_t>> TransitionMap;
