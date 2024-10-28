@@ -11,7 +11,15 @@
 
 int main()
 {
-    // auto split = RegexPreprocessor::split_upper_level_groups("[ab]*");
+    // auto res = RegexPreprocessor::clean_and_expand("\\s");
+    // std::cout << res << std::endl;
+
+    // for (auto c : res)
+    // {
+    //     std::cout << (AutomatonNode::verbose_trigger_name.contains(c) ? AutomatonNode::verbose_trigger_name.at(c) : std::string(1, c)) << std::endl;
+    // }
+
+    // auto split = RegexPreprocessor::split_upper_level_groups(res);
     // for (auto c : split)
     // {
     //     std::cout << c << std::endl;
@@ -33,10 +41,22 @@ int main()
     // std::cout << "Label: " << label << '\n';
     // std::cout << "Suffix: " << string_suffix << std::endl;
 
-    std::vector<TokenDefenition> tokens {
-        TokenDefenition(TokenType::INT_LITERAL, "[\\+-]?[0-9]+", "INT_LIT")
+    std::vector<TokenDefenition> tokens_defenition {
+        TokenDefenition(TokenType::SPACE, "\\s", "SPACE"),
+        TokenDefenition(TokenType::INT_LITERAL, "[\\+-]?[0-9]+", "INT_LITERAL"),
+        TokenDefenition(TokenType::ADD, "\\+", "ADD"),
+        TokenDefenition(TokenType::SUBTRACT, "-", "SUBTRACT"),
+        TokenDefenition(TokenType::MULTIPLY, "\\*", "MULTIPLY"),
+        TokenDefenition(TokenType::DIVIDE, "/", "DIVIDE"),
     };
 
-    Lexer lexer = Lexer(tokens);
+    Lexer lexer = Lexer(tokens_defenition);
     std::cout << lexer << std::endl;
+
+    std::string input = "16 17 + 45 * -54 +1223 -+34";
+    auto tokens = lexer.tokenize(input, std::cout, std::cerr);
+    for (auto c : tokens)
+    {
+        std::cout << c.value << std::endl;
+    }
 }

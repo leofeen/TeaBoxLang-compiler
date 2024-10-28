@@ -21,15 +21,15 @@ public:
     size_t size() const noexcept { return this->nodes.size(); };
     void resize(const size_t size);
     
-    AutomatonNode& operator[](const size_t index);
-    const AutomatonNode& operator[](const size_t index) const;
-    const AutomatonNode& get_by_id(const size_t id) const;
+    NondetermenisticNode& operator[](const size_t index);
+    const NondetermenisticNode& operator[](const size_t index) const;
+    const NondetermenisticNode& get_by_id(const size_t id) const;
 
     NFA star();
     // NFA plus();
     NFA question();
 
-    void add_node(const AutomatonNode& node);
+    void add_node(const NondetermenisticNode& node);
 
     std::unordered_set<size_t> find_closure(std::span<size_t> start_set) const;
     std::unordered_set<size_t> find_closure(std::unordered_set<size_t> start_set) const;
@@ -39,7 +39,7 @@ public:
     void insert(NFA& nfa);
 
 private:
-    std::vector<AutomatonNode> nodes;
+    std::vector<NondetermenisticNode> nodes;
 };
 
 NFA& operator+=(NFA& first, const NFA& second);

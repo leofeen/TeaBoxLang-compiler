@@ -31,7 +31,7 @@ DFA DFAFactory::from_nfa(const NFA &nfa, std::function<std::string(std::string, 
 
             for (auto id : result_subset_nodes[current_unchecked_node_index].first)
             {
-                const AutomatonNode& current_node_from_subset = nfa.get_by_id(id);
+                const NondetermenisticNode& current_node_from_subset = nfa.get_by_id(id);
 
                 for (auto transition : current_node_from_subset.transitions)
                 {

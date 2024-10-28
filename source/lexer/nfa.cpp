@@ -11,17 +11,17 @@ void NFA::resize(const size_t size)
     this->nodes.resize(size);
 }
 
-AutomatonNode& NFA::operator[](const size_t index)
+NondetermenisticNode& NFA::operator[](const size_t index)
 {
     return this->nodes.at(index);
 }
 
-const AutomatonNode& NFA::operator[](const size_t index) const
+const NondetermenisticNode& NFA::operator[](const size_t index) const
 {
     return this->nodes.at(index);
 }
 
-const AutomatonNode& NFA::get_by_id(const size_t id) const
+const NondetermenisticNode& NFA::get_by_id(const size_t id) const
 {
     for (size_t i = 0; i < this->size(); i++)
     {
@@ -43,7 +43,7 @@ NFA NFA::star()
 
     result.resize(this_size + 1);
 
-    AutomatonNode start_node = AutomatonNode(TransitionMap(), "", false);
+    NondetermenisticNode start_node;
 
     result[0] = start_node;
     result.out_node_index = 0;
@@ -66,8 +66,8 @@ NFA NFA::question()
 
     result.resize(this_size + 2);
 
-    AutomatonNode start_node = AutomatonNode();
-    AutomatonNode finish_node = AutomatonNode();
+    NondetermenisticNode start_node;
+    NondetermenisticNode finish_node;
 
     result.out_transition_trigger = '\0';
 
@@ -86,7 +86,7 @@ NFA NFA::question()
     return result;
 }
 
-void NFA::add_node(const AutomatonNode& node)
+void NFA::add_node(const NondetermenisticNode& node)
 {
     this->nodes.push_back(node);
 }
@@ -99,7 +99,7 @@ std::unordered_set<size_t> NFA::find_closure(std::unordered_set<size_t> start_se
     while (unmarked.size() != 0)
     {
         auto next_unmarked_handle = unmarked.extract(unmarked.begin());
-        const AutomatonNode& next_unmarked = this->get_by_id(next_unmarked_handle.value());
+        const NondetermenisticNode& next_unmarked = this->get_by_id(next_unmarked_handle.value());
 
         result.insert(std::move(next_unmarked_handle));
 
@@ -229,8 +229,8 @@ NFA operator|(NFA &first, NFA &second)
 
     result.resize(first_size + second_size + 2);
 
-    AutomatonNode start_node;
-    AutomatonNode finish_node;
+    NondetermenisticNode start_node;
+    NondetermenisticNode finish_node;
 
     result.out_transition_trigger = '\0';
 

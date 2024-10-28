@@ -6,7 +6,7 @@
 #include <map>
 #include <unordered_set>
 
-#include "determenistic_node.hpp"
+#include "automaton_node.hpp"
 
 
 class DFA  // Determenisic Finite Atomata
@@ -25,8 +25,7 @@ public:
 
     void add_node(const DetermenisticNode node);
 
-    // std::pair<bool, std::string> test_string(std::string input_string);
-    std::tuple<bool, std::string, std::string> test_string(std::string input_string);
+    std::tuple<bool, std::string, std::string, std::string> test_string(std::string input_string);
 
     void recalculate_id_lookup();
 

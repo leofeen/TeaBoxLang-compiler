@@ -4,7 +4,7 @@
 NFA NFAFactory::from_literal(const char literal)
 {
     NFA result;
-    result.add_node(AutomatonNode());
+    result.add_node(NondetermenisticNode());
     result.out_transition_trigger = literal;
 
     return result;
@@ -197,8 +197,8 @@ NFA NFAFactory::from_range(const std::string& range)
     result.out_transition_trigger = '\0';
     result.out_node_index = 1;
 
-    AutomatonNode start_node;
-    AutomatonNode final_node;
+    NondetermenisticNode start_node;
+    NondetermenisticNode final_node;
 
     for (size_t i = 1; i < range_clean.size() - 1; i++)
     {
@@ -233,7 +233,7 @@ NFA& NFAFactory::finalize(NFA& nfa)
 {
     NFA& result = nfa;
 
-    AutomatonNode final_node = AutomatonNode();
+    NondetermenisticNode final_node;
     final_node.is_final = true;
 
     result.add_node(final_node);
