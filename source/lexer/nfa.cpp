@@ -115,6 +115,11 @@ std::unordered_set<size_t> NFA::find_closure(std::unordered_set<size_t> start_se
     return result;
 }
 
+std::unordered_set<size_t> NFA::find_closure(std::span<size_t> start_set) const
+{
+    return this->find_closure(std::unordered_set<size_t>(start_set.begin(), start_set.end()));
+}
+
 void NFA::add_final_label(std::string label)
 {
     AutomatonNode& final_node = (*this)[this->size() - 1];
@@ -139,11 +144,6 @@ void NFA::insert(NFA &nfa)
     {
         this->add_node(nfa[i]);
     }
-}
-
-std::unordered_set<size_t> NFA::find_closure(std::span<size_t> start_set) const
-{
-    return this->find_closure(std::unordered_set<size_t>(start_set.begin(), start_set.end()));
 }
 
 NFA& operator+=(NFA& first, const NFA& second)

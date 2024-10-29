@@ -32,12 +32,6 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
                 continue;
             }
 
-            // if (regexp_fragment == "+")
-            // {
-            //     current = current.plus();
-            //     continue;
-            // }
-
             if (regexp_fragment == "?")
             {
                 current = current.question();
@@ -148,25 +142,20 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
 
     for (auto c : regexp_clean)
     {
+        if (previous.size() == 0)
+        {
+            char literal = change_map.contains(c) ? change_map.at(c)[0] : c;
+            previous = NFAFactory::from_literal(literal);
+            continue;
+        }
+
         if (c == change_map.at('*')[0])
         {
-            if (previous.size() == 0)
-            {
-                previous = NFAFactory::from_literal(change_map.at('*')[0]);
-                continue;
-            }
-
             result += previous.star();
             previous = NFA();
         }
         else if (c == change_map.at('?')[0])
         {
-            if (previous.size() == 0)
-            {
-                previous = NFAFactory::from_literal(change_map.at('?')[0]);
-                continue;
-            }
-
             result += previous.question();
             previous = NFA();
         }

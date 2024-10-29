@@ -94,6 +94,8 @@ std::vector<Token> Lexer::tokenize(std::string input, std::ostream& output_strea
         }
     }
 
+    output_stream << "Tokenization complete. Found " << result.size() << " tokens." << std::endl;
+
     return result;
 }
 
