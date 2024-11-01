@@ -51,46 +51,39 @@ std::vector<Token> Lexer::tokenize(std::string input, std::ostream& output_strea
 
     std::vector<Token> result;
 
-    bool is_success = false;
-    std::string next_label;
-    std::string token_value;
-    std::string input_suffix;
-
-    auto tied_returns = std::tie(is_success, next_label, token_value, input_suffix);
-
     while (input.size() > 0)
     {
-        tied_returns = this->tokens_dfa.test_string(input);
+        auto test_result = this->tokens_dfa.test_string(input);
 
-        if (is_success)
+        if (test_result.success)
         {
-            result.emplace_back(this->label_to_token_type_map.at(next_label), token_value);
-            input = input_suffix;
+            result.emplace_back(this->label_to_token_type_map.at(test_result.token_label), test_result.token_value);
+            input = test_result.suffix;
         }
         else
         {
-            size_t space_index = input_suffix.find(' ');
-            size_t tab_index = input_suffix.find('\t');
-            size_t new_line_index = input_suffix.find('\n');
+            size_t space_index = test_result.suffix.find(' ');
+            size_t tab_index = test_result.suffix.find('\t');
+            size_t new_line_index = test_result.suffix.find('\n');
 
-            size_t cutoff_index = input_suffix.size() - 1;
+            size_t cutoff_index = test_result.suffix.size() - 1;
 
-            if (space_index != input_suffix.npos && space_index < tab_index && space_index < new_line_index)
+            if (space_index != test_result.suffix.npos && space_index < tab_index && space_index < new_line_index)
             {
                 cutoff_index = space_index;
             }
-            else if (tab_index != input_suffix.npos && tab_index < space_index && tab_index < new_line_index)
+            else if (tab_index != test_result.suffix.npos && tab_index < space_index && tab_index < new_line_index)
             {
                 cutoff_index = tab_index;
             }
-            else if (new_line_index != input_suffix.npos && new_line_index < space_index && new_line_index < tab_index)
+            else if (new_line_index != test_result.suffix.npos && new_line_index < space_index && new_line_index < tab_index)
             {
                 cutoff_index = new_line_index;
             }
 
-            error_stream << "Lexical Error: " << input_suffix.substr(0, cutoff_index + 1) << " is an invalid token" << std::endl;
+            error_stream << "Lexical Error: " << test_result.suffix.substr(0, cutoff_index + 1) << " is an invalid token" << std::endl;
 
-            input = input_suffix.substr(cutoff_index + 1);
+            input = test_result.suffix.substr(cutoff_index + 1);
         }
     }
 

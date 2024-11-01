@@ -1,23 +1,24 @@
 #include "token.hpp"
 
 
+std::unordered_map<TokenType, std::string> Token::verbose_token_types = {
+    std::pair<TokenType, std::string>(TokenType::_EMPTY, "EMPTY"),
+    std::pair<TokenType, std::string>(TokenType::ADD, "ADD"),
+    std::pair<TokenType, std::string>(TokenType::SPACE, "SPACE"),
+    std::pair<TokenType, std::string>(TokenType::SUBTRACT, "SUBTRACT"),
+    std::pair<TokenType, std::string>(TokenType::MULTIPLY, "MULTIPLY"),
+    std::pair<TokenType, std::string>(TokenType::DIVIDE, "DIVIDE"),
+    std::pair<TokenType, std::string>(TokenType::INT_LITERAL, "INT_LITERAL"),
+    std::pair<TokenType, std::string>(TokenType::RETURN, "RETURN"),
+    std::pair<TokenType, std::string>(TokenType::VARIABLE, "VARIABLE"),
+    std::pair<TokenType, std::string>(TokenType::_EOF, "_EOF"),
+};
+
 std::ostream& operator<<(std::ostream& os, const Token& token)
 {
-    switch (token.token_type)
-    {
-    case TokenType::_NULL : os << "NULL "; break;
-    case TokenType::ADD : os << "ADD "; break;
-    case TokenType::SPACE : os << "SPACE "; break;
-    case TokenType::SUBTRACT : os << "SUBTRACT "; break;
-    case TokenType::MULTIPLY : os << "MULTIPLY "; break;
-    case TokenType::DIVIDE : os << "DIVIDE "; break;
-    case TokenType::INT_LITERAL : os << "INT_LITERAL "; break;
-    case TokenType::RETURN : os << "RETURN "; break;
-    case TokenType::VARIABLE : os << "VARIABLE "; break;
-    default: os << "DEFAULT_TOKEN_LABEL "; break;
-    }
+    std::string verbose_type = Token::verbose_token_types.contains(token.token_type) ? Token::verbose_token_types.at(token.token_type) : "DEFAULT_TOKEN_LABEL";
 
-    os << token.value;
+    os << verbose_type << " " << token.value;
 
     return os;
 }

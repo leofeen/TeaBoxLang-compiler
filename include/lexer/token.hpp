@@ -2,11 +2,12 @@
 
 #include <string>
 #include <iostream>
+#include <unordered_map>
 
 
 enum class TokenType
 {
-    _NULL = 0,
+    _EMPTY = 0,
     SPACE,
     ADD,
     SUBTRACT,
@@ -15,6 +16,7 @@ enum class TokenType
     INT_LITERAL,
     RETURN,
     VARIABLE,
+    _EOF,
 };
 
 
@@ -25,6 +27,8 @@ struct Token
 
     Token() = default;
     Token(TokenType token_type, std::string value) : token_type(token_type), value(value) {}
+
+    static std::unordered_map<TokenType, std::string> verbose_token_types;
 };
 
 std::ostream& operator<<(std::ostream& os, const Token& token);

@@ -12,4 +12,4 @@ file(GLOB_RECURSE CPP_SOURCES "source/*.cpp")
 
 add_executable(TeaBoxLang ${CPP_SOURCES} main.cpp)
 
-target_include_directories(TeaBoxLang PUBLIC "${PROJECT_SOURCE_DIR}/include/" "${PROJECT_SOURCE_DIR}/include/lexer")
+target_include_directories(TeaBoxLang PUBLIC "${PROJECT_SOURCE_DIR}/include/" "${PROJECT_SOURCE_DIR}/include/lexer" "${PROJECT_SOURCE_DIR}/include/parser")

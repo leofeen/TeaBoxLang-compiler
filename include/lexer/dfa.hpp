@@ -9,6 +9,18 @@
 #include "automaton_node.hpp"
 
 
+struct TestResult
+{
+    bool success = false;
+    std::string token_label;
+    std::string token_value;
+    std::string suffix;
+
+    TestResult() = default;
+    TestResult(bool success, std::string token_label, std::string token_value, std::string suffix) : 
+                success(success), token_label(token_label), token_value(token_value), suffix(suffix) {}
+};
+
 class DFA  // Determenisic Finite Atomata
 {
 public:
@@ -25,7 +37,7 @@ public:
 
     void add_node(const DetermenisticNode node);
 
-    std::tuple<bool, std::string, std::string, std::string> test_string(std::string input_string);
+    TestResult test_string(std::string input_string);
 
     void recalculate_id_lookup();
 
