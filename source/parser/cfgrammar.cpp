@@ -7,7 +7,7 @@ CFGrammar::CFGrammar(std::vector<TokenType> terminals, std::vector<Nonterminal> 
     this->terminals.emplace_back(TokenType::_EOF);
 
     Nonterminal EOF_detector;
-    EOF_detector.label = "EOF";
+    EOF_detector.label = "EOF_DETECTOR";
     std::vector<std::vector<std::string>> EOF_transition_wrapper;
     std::vector<std::string> EOF_transition;
     EOF_transition.reserve(2);
@@ -19,9 +19,6 @@ CFGrammar::CFGrammar(std::vector<TokenType> terminals, std::vector<Nonterminal> 
 
     size_t number_of_terminals = this->terminals.size();
     size_t number_of_nonterminals = this->nonterminals.size();
-
-    // this->id_lookup.emplace(Token::verbose_token_types.at(TokenType::_EMPTY), 0);
-    // this->alphabet += static_cast<char>(0);
 
     for (size_t i = 0; i < number_of_terminals; i++)
     {
@@ -39,7 +36,7 @@ CFGrammar::CFGrammar(std::vector<TokenType> terminals, std::vector<Nonterminal> 
     // for (size_t i = 0; i < number_of_nonterminals; i++)
     // {
     //     Nonterminal current_nonterminal = nonterminals[i];
-    //     char current_symbol = this->alphabet[i - number_of_terminals];
+    //     char current_symbol = this->alphabet[i + number_of_terminals];
     //     auto all_current_transitions_compact = std::vector<std::string>();
     //     all_current_transitions_compact.reserve(current_nonterminal.transitions.size());
 
@@ -74,6 +71,31 @@ std::vector<Nonterminal> CFGrammar::get_nonterminals()
 std::vector<TokenType> CFGrammar::get_terminals()
 {
     return this->terminals;
+}
+
+std::string CFGrammar::get_nullable()
+{
+    return this->nullable;
+}
+
+std::unordered_map<char, std::unordered_set<size_t>> CFGrammar::get_FIRST()
+{
+    return this->FIRST;
+}
+
+std::unordered_map<char, std::unordered_set<size_t>> CFGrammar::get_FOLLOW()
+{
+    return this->FOLLOW;
+}
+
+std::string CFGrammar::get_label_from_id(size_t id)
+{
+    if (id < this->terminals.size())
+    {
+        return Token::verbose_token_types.at(this->terminals[id]);
+    }
+
+    return this->nonterminals[id - this->terminals.size()].label;
 }
 
 void CFGrammar::calculate_nullable()
@@ -132,10 +154,10 @@ void CFGrammar::calculate_FIRST()
         FIRST_next_iteration.clear();
 
         FIRST_next_iteration.emplace(this->alphabet.at(this->id_lookup.at(Token::verbose_token_types.at(TokenType::_EMPTY))), std::unordered_set<size_t>());
-        for (size_t i = 0; i < number_of_terminals - 1; i++)
+        for (size_t i = 0; i < number_of_terminals; i++)
         {
             std::unordered_set<size_t> terminal_set;
-            terminal_set.emplace(i+1);
+            terminal_set.emplace(i);
             FIRST_next_iteration.emplace(this->alphabet.at(this->id_lookup.at(Token::verbose_token_types.at(terminals[i]))), terminal_set);
         }
 
@@ -153,7 +175,7 @@ void CFGrammar::calculate_FIRST()
                     new_nonterminal_set.insert(current_FIRST_set.begin(), current_FIRST_set.end());
 
                     if (this->nullable[this->id_lookup.at(transition[in_transition_index])] == '0') { break; }
-
+                    
                     if (++in_transition_index == transition.size()) { break; }
                 }
             }
@@ -178,16 +200,27 @@ void CFGrammar::calculate_FOLLOW()
     {
         for (size_t j = 0; j < number_of_nonterminals; j++)
         {
-            empty_constraints.emplace(this->alphabet[i - number_of_terminals] + this->alphabet[j - number_of_terminals], false);
+            auto from_to = std::string(1, this->alphabet[i + number_of_terminals]) + std::string(1, this->alphabet[j + number_of_terminals]);
+            empty_constraints.emplace(from_to, false);
         }
 
-        FOLLOW_next_iteration.emplace(this->alphabet[i - number_of_terminals], std::unordered_set<size_t>());
+        FOLLOW_next_iteration.emplace(this->alphabet[i + number_of_terminals], std::unordered_set<size_t>());
     }
+
+    // std::cout << this->nonterminals.size() << std::endl;
+
+    // for (auto p : empty_constraints)
+    // {
+    //     for (auto c : p.first)
+    //     {
+    //         std::cout << this->get_label_from_id(c) << std::endl;
+    //     }
+    // }
 
     // Generating all constraints and fullfill all FIRST in FOLLOW
     for (size_t i = 0; i < number_of_nonterminals; i++)
     {
-        char current_nonterminal_symbol = this->alphabet[i - number_of_terminals];
+        char current_nonterminal_symbol = this->alphabet[i + number_of_terminals];
         std::string current_nonterminal_label = this->nonterminals[i].label;
 
         for (size_t j = 0; j < number_of_nonterminals; j++)
@@ -231,7 +264,8 @@ void CFGrammar::calculate_FOLLOW()
 
                 if (adding_constraints)
                 {
-                    FOLLOW_constraints.emplace(this->alphabet[j - number_of_terminals] + current_nonterminal_symbol, true);
+                    auto from_to = std::string(1, this->alphabet[j + number_of_terminals]) + std::string(1, current_nonterminal_symbol);
+                    FOLLOW_constraints.emplace(from_to, true);
                 }
             }
         }

@@ -335,7 +335,7 @@ std::vector<std::string> RegexPreprocessor::split_upper_level_groups(std::string
     return result;
 }
 
-std::string RegexPreprocessor::remove_escaping_slashes_and_change_operations(std::string regex, std::map<char, std::string> change_map)
+std::string RegexPreprocessor::remove_escaping_slashes_and_change_operations(std::string regex, std::map<char, char> change_map)
 {
     std::vector<size_t> to_change;
     RegexPreprocessor::encode_escaped_symbols(regex);
@@ -347,7 +347,7 @@ std::string RegexPreprocessor::remove_escaping_slashes_and_change_operations(std
 
     for (auto i : to_change)
     {
-        regex.replace(i, 1, change_map.at(regex[i]));
+        regex.replace(i, 1, std::string(1, change_map.at(regex[i])));
     }
 
 

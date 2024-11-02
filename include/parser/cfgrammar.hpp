@@ -20,6 +20,12 @@ public:
     std::vector<Nonterminal> get_nonterminals();
     std::vector<TokenType> get_terminals();
 
+    std::string get_nullable();
+    std::unordered_map<char, std::unordered_set<size_t>> get_FIRST();
+    std::unordered_map<char, std::unordered_set<size_t>> get_FOLLOW();
+
+    std::string get_label_from_id(size_t id);
+
 private:
     std::string alphabet;  // All terminals
     std::vector<Nonterminal> nonterminals;

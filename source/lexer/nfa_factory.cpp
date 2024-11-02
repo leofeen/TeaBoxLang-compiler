@@ -12,13 +12,13 @@ NFA NFAFactory::from_literal(const char literal)
 
 NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass = false)
 {
-    std::string regexp_clean = not_first_pass ? regexp : RegexPreprocessor::clean_and_expand(regexp);
+    std::string regex_clean = not_first_pass ? regexp : RegexPreprocessor::clean_and_expand(regexp);
 
-    size_t open_group_pos = regexp_clean.find('(');
-    size_t open_range_pos = regexp_clean.find('[');
-    if (open_group_pos != regexp_clean.npos || open_range_pos != regexp_clean.npos)
+    size_t open_group_pos = regex_clean.find('(');
+    size_t open_range_pos = regex_clean.find('[');
+    if (open_group_pos != regex_clean.npos || open_range_pos != regex_clean.npos)
     {
-        auto split = RegexPreprocessor::split_upper_level_groups(regexp_clean);
+        auto split = RegexPreprocessor::split_upper_level_groups(regex_clean);
 
         NFA result;
         NFA current;
@@ -111,14 +111,14 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
         return result;
     }
 
-    RegexPreprocessor::encode_escaped_symbols(regexp_clean);
-    size_t union_pos = regexp_clean.find('|');
-    RegexPreprocessor::decode_escaped_symbols(regexp_clean);
+    RegexPreprocessor::encode_escaped_symbols(regex_clean);
+    size_t union_pos = regex_clean.find('|');
+    RegexPreprocessor::decode_escaped_symbols(regex_clean);
 
-    if (union_pos != regexp_clean.npos)
+    if (union_pos != regex_clean.npos)
     {
-        NFA left_part = NFAFactory::from_regexp(regexp_clean.substr(0, union_pos), true);
-        NFA right_part = NFAFactory::from_regexp(regexp_clean.substr(union_pos+1), true);
+        NFA left_part = NFAFactory::from_regexp(regex_clean.substr(0, union_pos), true);
+        NFA right_part = NFAFactory::from_regexp(regex_clean.substr(union_pos+1), true);
         NFA result = left_part | right_part;
         
         if (!not_first_pass)
@@ -133,28 +133,34 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
     NFA result;
     NFA previous;
 
-    std::map<char, std::string> change_map = {
-        std::pair<char, std::string>('*', "\a"),
-        std::pair<char, std::string>('?', "\f"),
+    std::map<char, char> change_map = {
+        std::pair<char, char>('*', '\a'),
+        std::pair<char, char>('?', '\f'),
     };
 
-    regexp_clean = RegexPreprocessor::remove_escaping_slashes_and_change_operations(regexp_clean, change_map);
+    std::map<char, char> change_back_map;
+    for (auto pair : change_map)
+    {
+        change_back_map.emplace(pair.second, pair.first);
+    }
 
-    for (auto c : regexp_clean)
+    regex_clean = RegexPreprocessor::remove_escaping_slashes_and_change_operations(regex_clean, change_map);
+
+    for (auto c : regex_clean)
     {
         if (previous.size() == 0)
         {
-            char literal = change_map.contains(c) ? change_map.at(c)[0] : c;
+            char literal = change_back_map.contains(c) ? change_back_map.at(c) : c;
             previous = NFAFactory::from_literal(literal);
             continue;
         }
 
-        if (c == change_map.at('*')[0])
+        if (c == change_map.at('*'))
         {
             result += previous.star();
             previous = NFA();
         }
-        else if (c == change_map.at('?')[0])
+        else if (c == change_map.at('?'))
         {
             result += previous.question();
             previous = NFA();
@@ -180,7 +186,7 @@ NFA NFAFactory::from_regexp(const std::string& regexp, const bool not_first_pass
 NFA NFAFactory::from_range(const std::string& range)
 {
     NFA result;
-    std::string range_clean = RegexPreprocessor::remove_escaping_slashes_and_change_operations(range, std::map<char, std::string>());
+    std::string range_clean = RegexPreprocessor::remove_escaping_slashes_and_change_operations(range, std::map<char, char>());
 
     result.resize(2);
     result.out_transition_trigger = '\0';
